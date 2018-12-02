@@ -2,9 +2,13 @@ import os
 import paho.mqtt.publish as publish
 import paho.mqtt.client as mqtt
 
+from mqtt_thread import MqttThread as mt
+
 MQTT_SERVER = "localhost"
 MQTT_PATH = "test_channel"
 MQTT_PORT = 1883
+
+erase = '\x1b[1A\x1b[2K'
 
 def main():
 
@@ -17,7 +21,10 @@ def main():
     client.on_message = on_message
     client.connect(MQTT_SERVER, MQTT_PORT, 60)
 
+    thread1 = mt(1, client)
+    thread1.start()
     cli(client)
+    thread1.stop()
 
 
 def cli(client):
@@ -50,12 +57,12 @@ def cli(client):
         # handles reconnecting.
         # Other loop*() functions are available that give a threaded interface and a
         # manual interface.
-        client.loop_forever()
+        #client.loop_forever()
 
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
-    print("Connected with result code " + str(rc))
+    print("\e[A\e[kOutput\nConnected with result code " + str(rc))
 
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
@@ -64,7 +71,7 @@ def on_connect(client, userdata, flags, rc):
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    print(msg.topic + " " + str(msg.payload))
+    print(escape + msg.topic + " " + str(msg.payload))
     # more callbacks, etc
 
 def show_topics():
